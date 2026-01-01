@@ -4,23 +4,46 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected!"))
   .catch(err => console.error("MongoDB connection error:", err));
 
-
 const PRSchema = new mongoose.Schema({
   prNumber: Number,
   title: String,
   author: String,
-  status: String,
+  branch: String,
+
+  status: {
+    type: String,
+    enum: [
+      "PENDING",
+      "PENDING_INSTRUCTOR",
+      "APPROVED",
+      "REJECTED",
+      "MERGED",
+      "CI_PASSED",
+      "CI_FAILED"
+    ],
+    default: "PENDING"
+  },
+
+  review: {
+    summary: String,
+    issues: [String],
+    score: Number,
+    branchType: String
+  }
 });
 
 const PR = mongoose.model("PR", PRSchema);
 
-exports.savePR = async (data) => {
-  const pr = new PR(data);
-  await pr.save();
-  console.log(`PR #${data.prNumber} saved.`);
-};
+module.exports = {
+  PR,
 
-exports.updateStatus = async (prNumber, status) => {
-  await PR.findOneAndUpdate({ prNumber }, { status });
-  console.log(`PR #${prNumber} status updated to ${status}.`);
+  savePR: async (data) => {
+    const pr = new PR(data);
+    await pr.save();
+    console.log(`PR #${data.prNumber} saved.`);
+  },
+
+  updatePR: async (prNumber, update) => {
+    await PR.findOneAndUpdate({ prNumber }, update);
+  }
 };

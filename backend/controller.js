@@ -1,4 +1,5 @@
 const PRModel = require("./prModel");
+const { autoReviewPR } = require("./reviewEngine");
 
 exports.handleWebhook = async (req, res) => {
   const event = req.headers["x-github-event"];
@@ -6,11 +7,26 @@ exports.handleWebhook = async (req, res) => {
 
   // PR opened
   if (event === "pull_request" && payload.action === "opened") {
+    const pr = payload.pull_request;
+
     await PRModel.savePR({
-      prNumber: payload.pull_request.number,
-      title: payload.pull_request.title,
-      author: payload.pull_request.user.login,
-      status: "PENDING",
+      prNumber: pr.number,
+      title: pr.title,
+      author: pr.user.login,
+      branch: pr.head.ref,
+      status: "PENDING"
+    });
+
+    const feedback = await autoReviewPR({
+      owner: payload.repository.owner.login,
+      repo: payload.repository.name,
+      prNumber: pr.number,
+      branch: pr.head.ref
+    });
+
+    await PRModel.updatePR(pr.number, {
+      review: feedback,
+      status: "PENDING_INSTRUCTOR"
     });
   }
 
@@ -20,10 +36,9 @@ exports.handleWebhook = async (req, res) => {
     const conclusion = payload.workflow_run.conclusion;
 
     if (prNumber) {
-      await PRModel.updateStatus(
-        prNumber,
-        conclusion === "success" ? "CI_PASSED" : "CI_FAILED"
-      );
+      await PRModel.updatePR(prNumber, {
+        status: conclusion === "success" ? "CI_PASSED" : "CI_FAILED"
+      });
     }
   }
 

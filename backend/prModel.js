@@ -43,6 +43,6 @@ module.exports = {
   },
 
   updatePR: async (prNumber, update) => {
-    await PR.findOneAndUpdate({ prNumber }, update);
+    await PR.findOneAndUpdate({ prNumber }, { $set: update }, { new: true });
   }
 };

@@ -6,10 +6,7 @@ services:
     container_name: mongodb
     ports:
       - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin123
-      MONGO_INITDB_DATABASE: githubPRs
+    env_file: .env
     volumes:
       - mongo-data:/data/db
 
@@ -18,12 +15,10 @@ services:
     container_name: backend
     ports:
       - "3000:3000"
-    environment:
-      - MONGO_URI=mongodb://admin:admin123@mongodb:27017/githubPRs?authSource=admin
-      - PORT=3000
+    env_file: .env
     depends_on:
       - mongodb
-  
+
   frontend:
     build: ../frontend
     container_name: pr-frontend

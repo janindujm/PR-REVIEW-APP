@@ -3,19 +3,13 @@ const router = express.Router();
 const { PR } = require("./prModel");
 const { mergePR } = require("./github");
 
-// Instructor dashboard
-router.get("/instructor/prs", async (req, res) => {
-  const prs = await PR.find({ status: "PENDING_INSTRUCTOR" });
-  res.json(prs);
-});
-
 // Approve & merge
 router.post("/approve/:prNumber", async (req, res) => {
   const prNumber = parseInt(req.params.prNumber);
   const pr = await PR.findOne({ prNumber });
 
   if (!pr) return res.status(404).json({ error: "PR not found" });
-  if (pr.status !== "PENDING_INSTRUCTOR")
+  if (pr.status !== "PENDING" && pr.status !== "CI_PASSED")
     return res.status(400).json({ error: "PR not ready for approval" });
 
   try {
@@ -42,5 +36,8 @@ router.get("/prs", async (req, res) => {
   const prs = await PR.find().sort({ prNumber: -1 });
   res.json(prs);
 });
+
+// (Instructor flow removed — admin-only approval kept at /approve/:prNumber)
+
 
 module.exports = router;

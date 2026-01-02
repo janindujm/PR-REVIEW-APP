@@ -7,19 +7,25 @@ async function loadPRs() {
 
   prs.forEach(pr => {
     const li = document.createElement("li");
-    li.textContent = `#${pr.prNumber} - ${pr.title} by ${pr.author} [${pr.status}]`;
 
+    li.textContent = `#${pr.prNumber} - ${pr.title} by ${pr.author} [${pr.status}] `;
+
+    // 1️⃣ Normal approval (admin / system)
     if (pr.status === "PENDING") {
       const btn = document.createElement("button");
       btn.textContent = "Approve & Merge";
+
       btn.onclick = async () => {
         await fetch(`http://13.220.94.183:3000/approve/${pr.prNumber}`, {
           method: "POST"
         });
         loadPRs();
       };
+
       li.appendChild(btn);
     }
+
+    // (Instructor approval removed — admin uses Approve & Merge)
 
     list.appendChild(li);
   });

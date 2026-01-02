@@ -14,7 +14,6 @@ const PRSchema = new mongoose.Schema({
     type: String,
     enum: [
       "PENDING",
-      "PENDING_INSTRUCTOR",
       "APPROVED",
       "REJECTED",
       "MERGED",
